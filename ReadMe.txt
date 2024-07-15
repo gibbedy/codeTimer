@@ -19,6 +19,7 @@
  * calls at all?
  * 
  * Usage would be:
+ * CodeTimer::turnOn(); //enable timers in setup
  * CodeTimer::startTimer("description"); // put before the code you want to time
  * CodeTimer::stopTimer("description"); // put after the code I want to time. Must have the same name as the start time
  * CodeTimer::printResults(); //print to Serial the times of all the sections that have been timed.
