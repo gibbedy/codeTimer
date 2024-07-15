@@ -1,7 +1,7 @@
 /*
  * I occasionally want to test how long a section or sections  of code takes to execute.
  * I do this because I often find I want to know how long some code blocks for or how much of every
- * loop I am left with to complete a certain task. Establishing a hard limit on the lenght/complexity of 
+ * loop I am left with to complete a certain task. Establishing a hard limit on the length/complexity of 
  * things I might want to code.
  * In order to not fill up my program with debug global variables to store the results of my tests I 
  * thought it would be better hide all the details in an object (later changed to some variables/functions in a namespace) 
