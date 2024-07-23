@@ -54,24 +54,47 @@
                     // if check.  It was drummed into me from java days. Why was that particularly important in java?   
         }     
       }
+      /* return the number of records in a given test. This will nearly always be MAX_RECORDS however in case it isn't I need to check
+       * so average/min/max calculations are correct
+      */
+      int getMaxIndex(int testIndex)
+      {
+        int maxIndex = tests[testIndex].recordNumber;
+          if (tests[testIndex].recordsFull) // The test located at 'testsIndex' is full (not on the first pass of filling the array)
+          {
+            maxIndex = MAX_RECORDS;  // So override maxIndex to be the index of a full records array
+          }
+        return maxIndex;
+      }
 
       unsigned long getAverage(int testsIndex)
       { 
         if(enableTests)
         {
           unsigned long sum = 0;
-          int maxIndex = tests[testsIndex].recordNumber;
-          if (tests[testsIndex].recordsFull) // The test located at 'testsIndex' is full (not on the first pass of filling the array)
-          {
-            maxIndex = MAX_RECORDS;  // So override maxIndex to be the index of a full records array
-          }
+          int maxIndex = getMaxIndex(testsIndex);
           for (int i = 0; i < maxIndex; i++)
           {
             sum += tests[testsIndex].runTime[i];
-          }
-          
+          }       
           return sum / maxIndex;
         }
+      }
+      
+      unsigned long getMinTime(int testIndex)
+      {
+        
+        int maxIndex = getMaxIndex(testIndex);
+		int minTime = tests[maxIndex].runTime;
+        for (int i = 0; i < maxIndex; i++)
+        {
+          int time = tests[testIndex].runTime[i];
+          if (time < minTime)
+          {
+            minTime = time;
+          }
+        }
+        return minTime;
       }
 
       // Record the start time of the test and give the record a name
