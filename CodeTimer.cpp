@@ -20,22 +20,21 @@ void CodeTimer::turnOff()
       
 int CodeTimer::checkRecordsForTest(const char recName[])
 {
-  if(enableTests)
-	{		
-	  int recordIndex = 0;
-	  for (; recordIndex < numberOfTests; recordIndex++)  // For each section of code that is being tested
-	  {
-		if (strcmp(tests[recordIndex].testId, recName) == 0) return recordIndex;  //break out of loop if recName is found in the records
-	  }
-	  
-	  return -1; // If we got this far the loop was searched and no recName was found so return -1
-				// I can imagine more complex functions having common code that you would want to run regardless
-				// of whether a previous function return was made or not, and writing the function in a way so you
-				// have only one return function. By having one return function I would be helping avoid a situation
-				// where this common code was missed. Doing things that way would add a little overhead in this, and
-				// I think it is correct to say all cases. in this case It would add no benifit and an extra
-				// if check.  It was drummed into me from java days. Why was that particularly important in java?   
-	}     
+
+  int recordIndex = 0;
+  for (; recordIndex < numberOfTests; recordIndex++)  // For each section of code that is being tested
+  {
+	if (strcmp(tests[recordIndex].testId, recName) == 0) return recordIndex;  //break out of loop if recName is found in the records
+  }
+  
+  return -1; // If we got this far the loop was searched and no recName was found so return -1
+			// I can imagine more complex functions having common code that you would want to run regardless
+			// of whether a previous function return was made or not, and writing the function in a way so you
+			// have only one return statement. By having one return function I would be helping avoid a situation
+			// where this common code was missed. Doing things that way would add a little overhead in this, and
+			// I think it is correct to say all cases. in this case It would add no benifit and an extra
+			// if check.  
+   
 }
 
 /* return the number of records in a given test. This will nearly always be MAX_RECORDS however in case it isn't I need to check
@@ -53,16 +52,14 @@ int CodeTimer::getMaxIndex(int testIndex)
 
 unsigned long CodeTimer::getAverage(int testsIndex)
 { 
-	if(enableTests)
-	{
-	  unsigned long sum = 0;
-	  int maxIndex = getMaxIndex(testsIndex);
-	  for (int i = 0; i < maxIndex; i++)
-	  {
-		sum += tests[testsIndex].runTime[i];
-	  }       
-	  return sum / maxIndex;
-	}
+  unsigned long sum = 0;
+  int maxIndex = getMaxIndex(testsIndex);
+  for (int i = 0; i < maxIndex; i++)
+  {
+	sum += tests[testsIndex].runTime[i];
+  }       
+  return sum / maxIndex;
+	
 }
 
 unsigned long CodeTimer::getMinTime(int testIndex)
