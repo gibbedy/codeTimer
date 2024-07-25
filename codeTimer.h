@@ -42,12 +42,15 @@ class CodeTimer
 	*/
 	void turnOn();
 	void turnOff();
-	unsigned long getAverage(int testsIndex); // get the average of all the runtimes for a given test by array index. Used by printTests function.
-	int getMaxIndex(int testIndex);
-	unsigned long getMinTime(int testIndex);
+
 	void startTimer(const char recName[]);
 	void stopTimer(const char recName[]);
-	int checkRecordsForTest(const char recName[]);  // Check if a record name is already in the tests array and return the index of it or -1 if not
 	void printResults();
+	
+	private:
+	int getMaxIndex(int testIndex);	
+	unsigned long getAverage(int testsIndex); // get the average of all the runtimes for a given test by array index. Used by printTests function.
+	unsigned long getMinTime(int testIndex);
+	int checkRecordsForTest(const char recName[]);  // Check if a record name is already in the tests array and return the index of it or -1 if not
 };
 #endif
