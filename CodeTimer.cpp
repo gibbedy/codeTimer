@@ -4,6 +4,8 @@ CodeTimer::CodeTimer()
 	bool enableTests = false;  // Enable tests allows leaving timer starts and stops in your main code and disabling them with one change here
 	int numberOfTests = 0; // how many tests are currently in the tests array.
 	testResult tests[MAX_TESTS]; //tests for up to MAX_TESTS  are stored here
+	unsigned int _loopCount = 0;
+	unsigned int loopCountStartTime = 0;
 }
 
 void CodeTimer::turnOn()
@@ -66,7 +68,7 @@ unsigned long CodeTimer::getMinTime(int testIndex)
 {
 
 	int maxIndex = getMaxIndex(testIndex);
-	int minTime = tests[maxIndex].runTime;
+	int minTime = tests[testIndex].runTime[maxIndex - 1];
 	for (int i = 0; i < maxIndex; i++)
 	{
 	  int time = tests[testIndex].runTime[i];
@@ -76,6 +78,22 @@ unsigned long CodeTimer::getMinTime(int testIndex)
 	  }
 	}
 	return minTime;
+}
+
+unsigned long CodeTimer::getMaxTime(int testIndex)
+{
+
+	int maxIndex = getMaxIndex(testIndex);
+	int maxTime = tests[testIndex].runTime[maxIndex - 1];
+	for (int i = 0; i < maxIndex; i++)
+	{
+	  int time = tests[testIndex].runTime[i];
+	  if (time > maxTime)
+	  {
+		maxTime = time;
+	  }
+	}
+	return maxTime;
 }
 
 // Record the start time of the test and give the record a name
@@ -135,20 +153,63 @@ void CodeTimer::stopTimer(const char recName[])
 	 }
 }
 
+void CodeTimer::loopCount()
+{
+	if(loopCountStartTime == 0)
+	{
+		loopCountStartTime = millis();  // Set the start time only if it hasn't already been set
+	}
+	_loopCount++;
+}
+
 void CodeTimer::printResults()
 {
+	
 	if(enableTests)
 	{
+	  unsigned int currentTime = millis();
+	  unsigned int lastLoopsDuration = currentTime - loopCountStartTime;
+	  unsigned int loopsPerSecond = _loopCount / (lastLoopsDuration / 1000);
+	  
 	  Serial.print("CodeTimer results for ");
 	  Serial.print(numberOfTests);
-	  Serial.println(" tests");
+	  Serial.println(" sections of code");
+	  
+	  if(_loopCount != 0)
+	  {
+		  Serial.print("currentTime : ");
+		  Serial.println(currentTime);
+		  
+		  Serial.print("loopCountStartTime : ");
+		  Serial.println(loopCountStartTime);
+		  
+		  Serial.print("LastLoopsDuration : ");
+		  Serial.println(lastLoopsDuration);
+		  
+		  Serial.print("loopcount : ");
+		  Serial.println(_loopCount);
+		  
+		  Serial.print("loopsPerSecond : ");
+		  Serial.println(loopsPerSecond);
+		  
+		  _loopCount = 0;
+		  loopCountStartTime = currentTime;
+		  
+		  
+	  }
+	  
 	  for (int i = 0; i < numberOfTests; i++)
 	  {
 		Serial.print(tests[i].testId);
 		Serial.print(" took on average ");
 		unsigned long average = getAverage(i);
 		Serial.print(average);
-		Serial.println(" uS");          
+		Serial.print(" uS");   
+		Serial.print(" With a minimum time of : ");
+		Serial.print(getMinTime(i));
+		Serial.print(" With a maximum time of : ");
+		Serial.println(getMaxTime(i));
+		
 	  }
 	  Serial.println();
 	}

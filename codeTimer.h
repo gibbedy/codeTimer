@@ -8,8 +8,10 @@ class CodeTimer
     static const int MAX_TEST_NAME = 15;  // Maximum length of testname that is used to identify the section of code that is being timed
     static const int MAX_TESTS = 20; // Maximum number of unique tests that can be performed. 
     static const int MAX_RECORDS = 100; // Maximum number of records for each test. When printing these will be averaged.   
+	unsigned int _loopCount; //records loopcount so i can determine how many loops per second the arduino is running at
+	unsigned int loopCountStartTime;
     bool enableTests;
-	int numberOfTests;
+	unsigned int numberOfTests;
 	
     	
 	/*
@@ -24,7 +26,7 @@ class CodeTimer
         bool recordsFull = false; // If i fill the runTime array i set this flag. 
                                   // This was added  because when averaging I stop at recordNumber (an array that is not full)
                                   // but if recordsFull is set I know the array is full (times are recorded over and over in array)
-                                  // represents an array of runTimes thatso when averging I know to ignore recordNumber and average the whole Array
+                                  // and represents an array of runTimes that so when averging I know to ignore recordNumber and average the whole Array
       };
 	  
 	  testResult tests[MAX_TESTS]; // holds all the timimg tests
@@ -45,12 +47,14 @@ class CodeTimer
 
 	void startTimer(const char recName[]);
 	void stopTimer(const char recName[]);
+	void loopCount();
 	void printResults();
 	
 	private:
 	int getMaxIndex(int testIndex);	
 	unsigned long getAverage(int testsIndex); // get the average of all the runtimes for a given test by array index. Used by printTests function.
 	unsigned long getMinTime(int testIndex);
+	unsigned long getMaxTime(int testIndex);
 	int checkRecordsForTest(const char recName[]);  // Check if a record name is already in the tests array and return the index of it or -1 if not
 };
 #endif
