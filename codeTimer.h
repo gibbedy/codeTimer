@@ -1,23 +1,23 @@
-#ifndef CODETIMER_H
-  #define CODETIMER_H
-    namespace CodeTimer   
-    {
-      bool enableTests = false;  // Enable tests allows leaving timer starts and stops in your main code and disabling them with one change here
-      const int MAX_TEST_NAME = 15;  // Maximum length of testname that is used to identify the section of code that is being timed
-      const int MAX_TESTS = 20; // Maximum number of unique tests that can be performed. 
-      const int MAX_RECORDS = 100; // Maximum number of records for each test. When printing these will be averaged.
-      
-      void turnOn()
-      {
-        enableTests = true;
-      }
+#ifndef CODETIMER_H 				//Include guards
+#define CODETIMER_H
+#include <Arduino.h>
 
-      void turnOff()
-      {
-        enableTests = false;
-      }
-      // Each test stores its results in this structure:
-      struct testResult
+class CodeTimer
+{
+	private:
+    static const int MAX_TEST_NAME = 15;  // Maximum length of testname that is used to identify the section of code that is being timed
+    static const int MAX_TESTS = 20; // Maximum number of unique tests that can be performed. 
+    static const int MAX_RECORDS = 100; // Maximum number of records for each test. When printing these will be averaged.   
+	unsigned int _loopCount; //records loopcount so i can determine how many loops per second the arduino is running at
+	unsigned int loopCountStartTime;
+    bool enableTests;
+	unsigned int numberOfTests;
+	
+    	
+	/*
+	* Holds the all results of a timing test 
+	*/
+	struct testResult
       {
         char testId[MAX_TEST_NAME];  // The name of the section of code under test
         unsigned long runTime[MAX_RECORDS];  // The runtime, in microseconds, of the section of code is put in here
@@ -26,128 +26,35 @@
         bool recordsFull = false; // If i fill the runTime array i set this flag. 
                                   // This was added  because when averaging I stop at recordNumber (an array that is not full)
                                   // but if recordsFull is set I know the array is full (times are recorded over and over in array)
-                                  // represents an array of runTimes thatso when averging I know to ignore recordNumber and average the whole Array
+                                  // and represents an array of runTimes that so when averging I know to ignore recordNumber and average the whole Array
       };
+	  
+	  testResult tests[MAX_TESTS]; // holds all the timimg tests
       
-      testResult tests[MAX_TESTS]; //tests for up to MAX_TESTS  are stored here
-      
-      int numberOfTests = 0; // how many tests are currently in the tests array.
-      int checkRecordsForTest(const char recName[]);  // Check if a record name is already in the tests array and return the index of it or -1 if not
-      unsigned long getAverage(int testsIndex); // get the average of all the runtimes for a given test by array index. Used by printTests function.
-      
-      int checkRecordsForTest(const char recName[])
-      {
-        if(enableTests)
-        {
-          int recordIndex = 0;
-          for (; recordIndex < numberOfTests; recordIndex++)  // For each section of code that is being tested
-          {
-            if (strcmp(tests[recordIndex].testId, recName) == 0) return recordIndex;  //break out of loop if recName is found in the records
-          }
-          
-          return -1; // If we got this far the loop was searched and no recName was found so return -1
-                    // I can imagine more complex functions having common code that you would want to run regardless
-                    // of whether a previous function return was made or not, and writing the function in a way so you
-                    // have only one return function. By having one return function I would be helping avoid a situation
-                    // where this common code was missed. Doing things that way would add a little overhead in this, and
-                    // I think it is correct to say all cases. in this case It would add no benifit and an extra
-                    // if check.  It was drummed into me from java days. Why was that particularly important in java?   
-        }     
-      }
+	public:
+	/*
+	* Constructor
+	*/
+	CodeTimer(); 
+	
+	/*
+	* Enable or disable the timeing function callse without needing to remove calls to the codtimer class 
+	* functions wherever they may be used. 
+	* The idea is i don't need to put defines around every location where i start and stop a timer
+	*/
+	void turnOn();
+	void turnOff();
 
-      unsigned long getAverage(int testsIndex)
-      { 
-        if(enableTests)
-        {
-          unsigned long sum = 0;
-          int maxIndex = tests[testsIndex].recordNumber;
-          if (tests[testsIndex].recordsFull) // The test located at 'testsIndex' is full (not on the first pass of filling the array)
-          {
-            maxIndex = MAX_RECORDS;  // So override maxIndex to be the index of a full records array
-          }
-          for (int i = 0; i < maxIndex; i++)
-          {
-            sum += tests[testsIndex].runTime[i];
-          }
-          
-          return sum / maxIndex;
-        }
-      }
-
-      // Record the start time of the test and give the record a name
-      void startTimer(const char recName[])
-      {
-        if(enableTests)
-        {
-          int startTime = micros();  
-          int recordIndex = checkRecordsForTest(recName); //if the testname is already in the testResults then it returns the position of that test in the testResults array otherwise it returns -1
-
-          if(recordIndex >= 0) //record exists
-          {
-            tests[recordIndex].startTime = startTime; //Store the start time in the appropriate test record 
-          }
-          else //record doesn't exist so create one
-          {
-            if (numberOfTests <  MAX_TESTS)  //check we havne't maxed out our number of sections of code to test
-            {
-              strncpy(tests[numberOfTests].testId,recName,MAX_TEST_NAME - 1); // set name for test by copying char string
-              tests[numberOfTests].testId[MAX_TEST_NAME - 1] = '\0'; //null terminate it. Only needed if I accidentally made the name longer than allowed by MAX_TESTNAME
-              tests[numberOfTests].startTime = startTime;  //set the startTime we recorded at the start of this function.
-              numberOfTests++;               
-            }
-            else
-            {
-              Serial.println("too many tests");
-              Serial.println("Increase MAX_TESTS");
-            }       
-          }
-        }       
-      }
-
-      // Stop the timer and specifiy an id to be used to store the result
-      void stopTimer(const char recName[])
-      {
-        if(enableTests)
-        {
-            unsigned long runTime = micros(); // for now just put current time in there until i find the start time.
-            int recordIndex = checkRecordsForTest(recName); //if the testname is already in the testResults then it returns the position of that test in the testResults array 
-            if(recordIndex >= 0) //record exists
-            { 
-              tests[recordIndex].runTime[tests[recordIndex].recordNumber] = runTime - tests[recordIndex].startTime; //Store the start time in the appropriate test record 
-              tests[recordIndex].recordNumber++;
-
-              if (tests[recordIndex].recordNumber >= MAX_RECORDS)
-              {
-                tests[recordIndex].recordNumber = 0;
-                tests[recordIndex].recordsFull = true;
-              }
-            }
-            else //record doesn't exist so we have called a stop on a start that doesn't exist
-            {      
-              Serial.print("Called a stop with an Id: ");
-              Serial.print(recName);
-              Serial.println (" that doesn't exist!");
-            }
-          }
-        }
-
-       void printResults()
-      {
-        if(enableTests)
-        {
-          Serial.print("CodeTimer results for ");
-          Serial.print(numberOfTests);
-          Serial.println(" tests");
-          for (int i = 0; i < numberOfTests; i++)
-          {
-            Serial.print(tests[i].testId);
-            Serial.print(" took on average ");
-            unsigned long average = getAverage(i);
-            Serial.print(average);
-            Serial.println(" uS");          
-          }
-          Serial.println();
-        }
-      }
-    }
+	void startTimer(const char recName[]);
+	void stopTimer(const char recName[]);
+	void loopCount();
+	void printResults();
+	
+	private:
+	int getMaxIndex(int testIndex);	
+	unsigned long getAverage(int testsIndex); // get the average of all the runtimes for a given test by array index. Used by printTests function.
+	unsigned long getMinTime(int testIndex);
+	unsigned long getMaxTime(int testIndex);
+	int checkRecordsForTest(const char recName[]);  // Check if a record name is already in the tests array and return the index of it or -1 if not
+};
 #endif
